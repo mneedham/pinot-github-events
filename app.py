@@ -10,7 +10,6 @@ conn = connect(host='localhost', port=8000, path='/query/sql', scheme='http')
 
 @st.cache
 def get_orgs():
-
     orgs_query = """
     select organization, count(*) AS count
     from pullRequestMergedEvents 
@@ -24,7 +23,7 @@ def get_orgs():
     df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
     return df['organization'].values
 
-org = st.selectbox('Choose an organization', get_orgs())
+org = st.selectbox('Select an organization', get_orgs())
 
 metrics = ["numLinesAdded", "numFilesChanged", "numLinesDeleted", "numComments"]
 
@@ -42,4 +41,193 @@ limit 50
 
 df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
 
-st.dataframe(df.assign(hack='').set_index('hack'))
+st.header(f"Activity in the {org} organization")
+
+st.markdown(f"""
+| Metric      | Count |
+| :-----        |              -----: |
+| Lines Added      | {df['linesAdded'].astype('int32').values[0]:,}       |
+| Lines Deleted      | {df['linesDeleted'].astype('int32').values[0]:,}       |
+| Files Changed      | {df['filesChanged'].astype('int32').values[0]:,}       |
+| Commits      | {df['commits'].astype('int32').values[0]:,}       |
+""")
+
+left, right = st.beta_columns(2)
+
+with left:
+    st.subheader("PRs")
+    curs.execute(f"""
+    select repo, count(*) as prs
+    from pullRequestMergedEvents 
+    WHERE organization = '{org}'
+    group by repo
+    order by prs DESC
+    limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar().encode(
+        y=alt.Y('repo', sort=["index"], axis=alt.Axis(labels=True, ticks=False), title=None),
+        x=alt.X('prs'),        
+        tooltip=["repo", alt.Tooltip('prs', format=',')] 
+    ).properties()
+
+    st.altair_chart(chart, use_container_width=True)  
+
+    st.subheader("Files changed")
+    curs.execute(f"""
+    select repo, sum(numFilesChanged) as filesChanged
+    from pullRequestMergedEvents 
+    WHERE organization = '{org}'
+    group by repo
+    order by filesChanged DESC
+    limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar().encode(
+        y=alt.Y('repo', sort=["index"], axis=alt.Axis(labels=True, ticks=False), title=None),
+        x=alt.X('filesChanged'),        
+        tooltip=["repo", alt.Tooltip('filesChanged', format=',')] 
+    ).properties()
+
+    st.altair_chart(chart, use_container_width=True)  
+
+    st.subheader("Lines added")
+    curs.execute(f"""
+    select repo, sum(numLinesAdded) as linesAdded
+    from pullRequestMergedEvents 
+    WHERE organization = '{org}'
+    group by repo
+    order by linesAdded DESC
+    limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar().encode(
+        y=alt.Y('repo', sort=["index"], axis=alt.Axis(labels=True, ticks=False), title=None),
+        x=alt.X('linesAdded'),        
+        tooltip=["repo", alt.Tooltip('linesAdded', format=',')] 
+    ).properties()
+
+    st.altair_chart(chart, use_container_width=True)      
+
+with right:
+    st.subheader("Commits")
+    curs.execute(f"""
+    select repo, sum(numCommits) as commits
+    from pullRequestMergedEvents 
+    WHERE organization = '{org}'
+    group by repo
+    order by commits DESC
+    limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar().encode(
+        y=alt.Y('repo', sort=["index"], axis=alt.Axis(labels=True, ticks=False), title=None),
+        x=alt.X('commits'),        
+        tooltip=["repo", alt.Tooltip('commits', format=',')] 
+    ).properties()
+
+    st.altair_chart(chart, use_container_width=True)  
+
+    st.subheader("Lines deleted")
+    curs.execute(f"""
+    select repo, sum(numLinesDeleted) as linesDeleted
+    from pullRequestMergedEvents 
+    WHERE organization = '{org}'
+    group by repo
+    order by linesDeleted DESC
+    limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar().encode(
+        y=alt.Y('repo', sort=["index"], axis=alt.Axis(labels=True, ticks=False), title=None),
+        x=alt.X('linesDeleted'),        
+        tooltip=["repo", alt.Tooltip('linesDeleted', format=',')] 
+    ).properties()
+
+    st.altair_chart(chart, use_container_width=True)     
+
+@st.cache
+def get_repos(org):
+    repo_query = f"""
+    select repo, count(*) AS count
+    from pullRequestMergedEvents 
+    WHERE organization = '{org}'
+    group by repo
+    order by count DESC
+    limit 50
+    """
+
+    curs = conn.cursor()
+    curs.execute(repo_query)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    return df['repo'].values
+
+repo = st.selectbox('Select an organization', get_repos(org))    
+
+st.subheader(f"Activity in the {org}/{repo} repository")    
+
+left, right = st.beta_columns(2)
+
+with left:
+    curs.execute(f"""
+    select userId, count(*) AS count
+        from pullRequestMergedEvents 
+        WHERE organization = '{org}'
+        AND repo = '{repo}'
+        GROUP BY userId
+        ORDER BY count DESC
+        limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar(color='#9B59B6').encode(
+    x=alt.X('userId', sort=["index"], axis=alt.Axis(labels=True, ticks=False, labelAngle=0), title=None),
+    y=alt.Y('count'),        
+    tooltip=["userId", alt.Tooltip('count', format=',')] 
+    ).properties()
+
+    st.write("Who creates PRs?")
+    st.altair_chart(chart, use_container_width=True)  
+
+    curs.execute(f"""
+    select reviewers, COUNTMV(reviewers) AS count
+    from pullRequestMergedEvents 
+    WHERE reviewers != ''
+    AND organization = '{org}'
+    AND repo = '{repo}'
+    GROUP BY reviewers
+    ORDER BY count DESC
+    limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar(color='#9B59B6').encode(
+    x=alt.X('reviewers', sort=["index"], axis=alt.Axis(labels=True, ticks=False, labelAngle=0), title=None),
+    y=alt.Y('count'),        
+    tooltip=["reviewers", alt.Tooltip('count', format=',')] 
+    ).properties()
+
+    st.write("Who reviews PRs?")
+    if df.shape[0] > 0:
+        st.altair_chart(chart, use_container_width=True)  
+    else:
+        st.write("No PRs")
+
+with right:  
+    curs.execute(f"""
+    select mergedBy, count(*) AS count
+        from pullRequestMergedEvents 
+        WHERE organization = '{org}'
+        AND repo = '{repo}'
+        GROUP BY mergedBy
+        ORDER BY count DESC
+        limit 10
+    """)
+    df = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+    chart = alt.Chart(df, padding={"left": 10, "top": 10, "right": 10, "bottom": 10}).mark_bar(color='#9B59B6').encode(
+    x=alt.X('mergedBy', sort=["index"], axis=alt.Axis(labels=True, ticks=False, labelAngle=0), title=None),
+    y=alt.Y('count'),        
+    tooltip=["mergedBy", alt.Tooltip('count', format=',')] 
+    ).properties()
+
+    st.write("Who merges PRs?")
+    if df.shape[0] > 0:
+        st.altair_chart(chart, use_container_width=True)    
