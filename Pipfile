@@ -9,6 +9,7 @@ verify_ssl = true
 pinotdb = "*"
 streamlit = "*"
 plotly = "*"
+wordcloud = "*"
 
 [requires]
 python_version = "3.8"

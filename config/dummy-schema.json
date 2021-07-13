@@ -1,0 +1,24 @@
+{
+    "schemaName": "dummy-tweets",
+    "dimensionFieldSpecs": [
+      {
+        "name": "name",
+        "dataType": "STRING",
+        "defaultNullValue": 0
+      }
+    ],
+    "metricFieldSpecs": [
+      {
+        "name": "score",
+        "dataType": "INT",
+        "defaultNullValue": 0
+      }
+    ],
+    "dateTimeFieldSpecs": [{
+      "name": "date",
+      "dataType": "LONG",
+      "format" : "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }]
+  }
+  

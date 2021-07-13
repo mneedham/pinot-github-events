@@ -1,0 +1,54 @@
+{
+  "schemaName": "tweets5",
+  "dimensionFieldSpecs": [
+    {
+      "name": "id",
+      "dataType": "STRING",
+      "defaultNullValue": ""
+    },    
+    {
+      "name": "author_id",
+      "dataType": "STRING",
+      "defaultNullValue": ""
+    },  
+    {
+      "name": "username",
+      "dataType": "STRING",
+      "defaultNullValue": ""
+    },    
+    {
+      "name": "name",
+      "dataType": "STRING",
+      "defaultNullValue": ""
+    },
+    {
+      "name": "text",
+      "dataType": "STRING",
+      "defaultNullValue": ""
+    },
+    {
+      "name": "hashtags",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
+    },
+    {
+      "name": "urls",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
+    },
+    {
+      "name": "mentions",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
+    }
+  ],
+  "dateTimeFieldSpecs": [{
+    "name": "created_at",
+    "dataType": "STRING",
+    "format" : "1:DAYS:SIMPLE_DATE_FORMAT:yyyy-MM-ddTHH:MM:ss",
+    "granularity": "1:SECONDS"
+  }]
+}
