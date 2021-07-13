@@ -8,4 +8,10 @@
 docker-compose up
 ----
 
-= Streamlit app 
+== Streamlit app 
+
+[source, bash]
+----
+pipenv shell
+streamlit run app.py
+----
