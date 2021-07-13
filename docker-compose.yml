@@ -2,7 +2,7 @@ version: '3'
 services:
   pinot:
     image: apachepinot/pinot:0.7.1
-    command: "GitHubEventsQuickStart -personalAccessToken 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"
+    command: "GitHubEventsQuickStart -personalAccessToken ${GITHUB_TOKEN}"
     container_name: "pinot-github-events-quick-start"
     volumes:
       - ./config:/config

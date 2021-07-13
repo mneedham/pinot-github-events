@@ -78,7 +78,6 @@ def overview():
     with right:    
         with st.spinner('Loading word cloud...'):
             wc = WordCloud(background_color="white", max_words=1000, width=800, height=500)        
-            # st.write(df)
             df = get_orgs_df(metric)
             wc.generate_from_frequencies({item[0]: item[1] for item in df.values})
             st.image(wc.to_array())
