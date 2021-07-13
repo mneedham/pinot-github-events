@@ -1,0 +1,7 @@
+= Analysing GitHub Events with Apache Pinot and Streamlit
+
+
+[source, bash]
+----
+docker-compose up
+----
