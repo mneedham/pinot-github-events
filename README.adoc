@@ -1,4 +1,4 @@
-= Analysing GitHub Events with Apache Pinot and Streamlit
+= Analysing GitHub Events with Pinot and Streamlit
 
 
 [source, bash]
