@@ -1,7 +1,11 @@
 = Analysing GitHub Events with Pinot and Streamlit
 
 
+== Launch Pinot 
+
 [source, bash]
 ----
 docker-compose up
 ----
+
+= Streamlit app 
