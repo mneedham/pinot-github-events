@@ -1,6 +1,10 @@
 = Analysing GitHub Events with Pinot and Streamlit
 
 
+== Add GitHub token
+
+Go to https://github.com/settings/tokens[personal access tokens^], generate a token, and then paste it into the `.env` file.
+
 == Launch Pinot 
 
 [source, bash]
