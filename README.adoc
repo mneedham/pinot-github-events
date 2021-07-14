@@ -1,6 +1,6 @@
 = Analysing GitHub Events with Pinot and Streamlit
 
-
+image::images/streamlit.png[]
 
 == Add GitHub token
 
