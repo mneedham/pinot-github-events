@@ -39,6 +39,32 @@ def overview():
         curs.execute(orgs_query, {"subtract_time": subtract_time})
         return pd.DataFrame(curs, columns=[item[0] for item in curs.description])
 
+    def get_users_df(metric, subtract_time):
+        query = f"""
+        select userId, {metric}
+        from pullRequestMergedEvents 
+        where createdTimeMillis > cast((now() - %(subtract_time)d*1000*60) as long)
+        group by userId
+        order by {metric} DESC
+        limit 1000
+        """
+        curs = conn.cursor()
+        curs.execute(query, {"subtract_time": subtract_time})
+        return pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+
+    def get_mergers_df(metric, subtract_time):
+        query = f"""
+        select mergedBy, {metric}
+        from pullRequestMergedEvents 
+        where createdTimeMillis > cast((now() - %(subtract_time)d*1000*60) as long)
+        group by mergedBy
+        order by {metric} DESC
+        limit 1000
+        """
+        curs = conn.cursor()
+        curs.execute(query, {"subtract_time": subtract_time})
+        return pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+
     metrics = [
         "count(*)", 
         "sum(numCommits)", 
@@ -51,8 +77,10 @@ def overview():
 
     time_range = {
         "All events": round(time.time() * 1000),
-        "Last hour": 60,
-        "Last 12 hours": 12*60
+        "Last week": 7*24*60,
+        "Last day": 24*60,
+        "Last 12 hours": 12*60,
+        "Last hour": 60        
     }
 
 
@@ -81,25 +109,45 @@ def overview():
 
     st.markdown("---")
 
+    with st.form(key='searchForm'):
+        col1, col2 = st.beta_columns(2)
+        with col1:
+            metric = st.selectbox('Select a metric:', metrics)
+        with col2:
+            timestamp = st.selectbox('Select time range:', list(time_range.keys()))
+        
+        submit_button = st.form_submit_button(label='Refresh')
+
     col1, col2 = st.beta_columns(2)
+
     with col1:
-        metric = st.selectbox('Select a metric:', metrics)
+        st.subheader("Most active organisations")
+        with st.spinner('Loading word cloud...'):
+            wc = WordCloud(background_color="white", max_words=1000, width=1000, height=400)        
+            df = get_orgs_df(metric, time_range[timestamp])
+            wc.generate_from_frequencies({item[0]: item[1] for item in df.values})
+            st.image(wc.to_array(), use_column_width=True)
+
+        st.subheader("Most active users")
+        with st.spinner('Loading word cloud...'):
+            wc = WordCloud(background_color="white", max_words=1000, width=1000, height=400)        
+            df = get_users_df(metric, time_range[timestamp])
+            wc.generate_from_frequencies({item[0]: item[1] for item in df.values})
+            st.image(wc.to_array(), use_column_width=True)            
+
     with col2:
-        timestamp = st.selectbox('Select time range:', list(time_range.keys()))
+        st.subheader("Most active repositories")
+        with st.spinner('Loading word cloud...'):
+            wc = WordCloud(background_color="white", max_words=1000, width=1000, height=400)
+            df = get_repos_df(metric, time_range[timestamp])
+            wc.generate_from_frequencies({item[1]: item[2] for item in df.values})
+            st.image(wc.to_array(), use_column_width=True)
 
-    st.subheader("Most active organisations")
-    with st.spinner('Loading word cloud...'):
-        wc = WordCloud(background_color="white", max_words=1000, width=800, height=500)        
-        df = get_orgs_df(metric, time_range[timestamp])
-        wc.generate_from_frequencies({item[0]: item[1] for item in df.values})
-        st.image(wc.to_array())
-
-
-    st.subheader("Most active repositories")
-    with st.spinner('Loading word cloud...'):
-        wc = WordCloud(background_color="white", max_words=1000, width=800, height=500)
-        df = get_repos_df(metric, time_range[timestamp])
-        wc.generate_from_frequencies({item[1]: item[2] for item in df.values})
-        st.image(wc.to_array())
+        st.subheader("Most active mergers")
+        with st.spinner('Loading word cloud...'):
+            wc = WordCloud(background_color="white", max_words=1000, width=1000, height=400)        
+            df = get_mergers_df(metric, time_range[timestamp])
+            wc.generate_from_frequencies({item[0]: item[1] for item in df.values})
+            st.image(wc.to_array(), use_column_width=True)                 
 
 
