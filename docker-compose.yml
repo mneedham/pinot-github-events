@@ -4,10 +4,6 @@ services:
     image: apachepinot/pinot:0.7.1
     command: "GitHubEventsQuickStart -personalAccessToken ${GITHUB_TOKEN}"
     container_name: "pinot-github-events-quick-start"
-    volumes:
-      - ./config:/config
-      - ./data:/data
-      - ./datalog:/datalog
     ports:
       - "9000:9000"      
       - "8000:8000"
