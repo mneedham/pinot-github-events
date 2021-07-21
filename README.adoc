@@ -1,6 +1,6 @@
 = Analysing GitHub Events with Pinot and Streamlit
 
-This repository contains a Streamlit app running on top of https://docs.pinot.apache.org/basics/recipes/github-events-stream[Apache Pinot's GitHub Events stream Quick Start recipe^].
+This repository contains a Streamlit app running on top of https://docs.pinot.apache.org/basics/recipes/github-events-stream[Apache Pinot's GitHub Events stream Quick Start recipe^]. The accompanying blog post is at https://markhneedham.medium.com/analysing-github-events-with-apache-pinot-and-streamlit-2ed555e9fb78.
 
 image::images/streamlit.png[]
 
